@@ -1,0 +1,59 @@
+{
+  "name": "@lyxa/bottom-sheet",
+  "version": "1.0.0",
+  "description": "Production-grade bottom sheet for React Native New Architecture with snap points, dynamic height, and smooth animations",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "source": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "files": [
+    "lib",
+    "src",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__"
+  ],
+  "scripts": {
+    "build": "react-native-builder-bob build",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "react-native",
+    "bottom-sheet",
+    "snap-points",
+    "reanimated",
+    "gesture-handler",
+    "new-architecture",
+    "fabric"
+  ],
+  "author": "Lyxa",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-native": ">=0.74.0",
+    "react-native-gesture-handler": ">=3.0.0",
+    "react-native-reanimated": ">=4.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "babel-plugin-module-resolver": "^5.0.0",
+    "react-native-builder-bob": "^0.30.0",
+    "typescript": "^5.4.0"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      ["commonjs", { "esm": false }],
+      ["module", { "esm": true }],
+      ["typescript", { "project": "tsconfig.build.json" }]
+    ]
+  }
+}
