@@ -73,6 +73,14 @@ export interface BottomSheetContextType {
   scrollLocked: SharedValue<boolean>;
   /** Animated sheet height (for dynamic sizing) */
   animatedContentHeight: SharedValue<number>;
+  /** Resolved snap positions (translateY values) — readable from UI thread */
+  snapPositions: SharedValue<number[]>;
+  /** Fully-closed translateY (= screen height) — readable from UI thread */
+  closedY: SharedValue<number>;
+  /** Whether dragging past the last snap point closes the sheet */
+  enablePanDownToClose: SharedValue<boolean>;
+  /** Notify the sheet of a snap index change (call via runOnJS) */
+  onIndexChange: (index: number) => void;
 }
 
 export interface BottomSheetScrollViewProps extends ScrollViewProps {

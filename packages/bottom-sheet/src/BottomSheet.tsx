@@ -105,9 +105,15 @@ const BottomSheet = forwardRef<BottomSheetMethods, BottomSheetProps>(
     const animatedContentHeight = useSharedValue(0);
     const isOpened = useRef(false);
 
-    // SharedValue so gesture/animation worklets on the UI thread can read it
+    // SharedValues so gesture/animation worklets on the UI thread can read them
     const snapPositionsShared = useSharedValue<number[]>(snapPositions);
     snapPositionsShared.value = snapPositions;
+
+    const closedYShared = useSharedValue(closedY);
+    closedYShared.value = closedY;
+
+    const enablePanDownToCloseShared = useSharedValue(enablePanDownToClose);
+    enablePanDownToCloseShared.value = enablePanDownToClose;
 
     // ─── Stable prop refs — lets worklet callbacks stay stable across renders ──
     const onChangeRef = useRef(onChange);
@@ -142,7 +148,8 @@ const BottomSheet = forwardRef<BottomSheetMethods, BottomSheetProps>(
             const idx = findSnapIndex(positions, toY);
             const resolvedIndex = toY >= closedY ? -1 : idx;
             runOnJS(onChangeJS)(resolvedIndex);
-            scrollLocked.value = toY > (positions[0] ?? closedY);
+            // Unlock scroll at any stable snap point — only lock during dragging
+            scrollLocked.value = false;
           }
         });
         prevTranslateY.value = toY;
@@ -187,7 +194,7 @@ const BottomSheet = forwardRef<BottomSheetMethods, BottomSheetProps>(
           translateY.value = withSpring(targetY, SPRING_CONFIG, (finished) => {
             if (finished) {
               runOnJS(onChangeJS)(clampedInitial);
-              scrollLocked.value = targetY > openSnap;
+              scrollLocked.value = false;
               if (targetY < closedY) {
                 runOnJS(onOpenJS)();
               }
@@ -217,6 +224,7 @@ const BottomSheet = forwardRef<BottomSheetMethods, BottomSheetProps>(
         Gesture.Pan()
           .onStart(() => {
             prevTranslateY.value = translateY.value;
+            scrollLocked.value = true; // lock scroll for the duration of this drag
           })
           .onUpdate(({ translationY }) => {
             const next = prevTranslateY.value + translationY;
@@ -229,8 +237,6 @@ const BottomSheet = forwardRef<BottomSheetMethods, BottomSheetProps>(
             } else {
               translateY.value = next;
             }
-
-            scrollLocked.value = translateY.value > maxOpen + 2;
           })
           .onEnd(({ velocityY }) => {
             const positions = snapPositionsShared.value;
@@ -301,8 +307,13 @@ const BottomSheet = forwardRef<BottomSheetMethods, BottomSheetProps>(
         scrollY,
         scrollLocked,
         animatedContentHeight,
+        snapPositions: snapPositionsShared,
+        closedY: closedYShared,
+        enablePanDownToClose: enablePanDownToCloseShared,
+        onIndexChange: onChangeJS,
       }),
-      [translateY, animatedIndex, scrollY, scrollLocked, animatedContentHeight],
+      [translateY, animatedIndex, scrollY, scrollLocked, animatedContentHeight,
+       snapPositionsShared, closedYShared, enablePanDownToCloseShared, onChangeJS],
     );
 
     // Sheet height: from its top snap to bottom of screen
